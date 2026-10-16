@@ -1,0 +1,83 @@
+.main {
+  min-height: calc(100vh - 72px);
+  padding: 56px 5vw 80px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.title {
+  display: grid;
+  gap: 18px;
+  max-width: 1000px;
+  margin-bottom: 44px;
+}
+
+.title h2 {
+  font-family: var(--font-title);
+  font-size: clamp(84px, 14vw, 178px);
+  line-height: 0.88;
+  letter-spacing: 0;
+}
+
+.title p,
+.title span {
+  // max-width: 760px;
+  font-size: clamp(18px, 2vw, 26px);
+  line-height: 1.5;
+}
+
+.searchBox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  max-width: 820px;
+  margin-bottom: 34px;
+}
+
+.searchBox input {
+  flex: 1 1 260px;
+  min-height: 56px;
+  padding: 0 18px;
+  border: 0;
+  border-left: 3px solid var(--color-ink);
+  border-bottom: 3px solid var(--color-ink);
+  border-radius: 3px;
+}
+
+.searchBox button {
+  min-height: 56px;
+  padding: 0 24px;
+  border: 0;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  border-radius: 3px;
+  font-weight: 700;
+  transition: background 0.25s ease;
+}
+
+.searchBox button:hover {
+  background: var(--color-accent);
+  color: var(--color-paper);
+}
+
+.message,
+.weatherCard {
+  max-width: 820px;
+  padding: 28px;
+  border-left: 3px solid var(--color-ink);
+  border-bottom: 3px solid var(--color-ink);
+  border-radius: 3px;
+}
+
+.weatherCard h2 {
+  margin-bottom: 14px;
+  font-family: var(--font-title);
+  font-size: clamp(52px, 8vw, 104px);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.weatherCard p {
+  font-size: 22px;
+  line-height: 1.6;
+}

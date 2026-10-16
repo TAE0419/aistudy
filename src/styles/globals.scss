@@ -1,0 +1,73 @@
+@use "./reset.scss";
+
+@font-face {
+  font-family: "HakgyoansimMulgyeol";
+  src: url("/학교안심 물결/HakgyoansimMulgyeolB.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --color-paper: #faf2e0;
+  --color-ink: #00416a;
+  --color-accent: #ffb951;
+  --font-title: "HakgyoansimMulgyeol", Arial, Helvetica, sans-serif;
+  --font-body: Arial, Helvetica, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+input,
+textarea {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+button {
+  border: 0;
+  border-radius: 3px;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+button:hover {
+  background: var(--color-accent);
+}
+
+button:disabled {
+  cursor: wait;
+}
+
+::selection {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
