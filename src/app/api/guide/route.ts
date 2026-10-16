@@ -90,7 +90,7 @@ export const POST = async(req:Request)=>{
 
         if(!searchResult.trim()){
             return NextResponse.json({
-                answer:'죄송합니다. 해당 내용은 찾지 못했습니다. React 학습, AI 퀴즈, 힌트, 로그인, 채팅 등 홈페이지 이용 방법을 질문해주세요.'
+                answer:'해당 내용을 확인하지 못했습니다. React 개념 설명, 문제 만들기, 정답 보기, 힌트 받기, 날씨 검색 등 홈페이지 이용 방법을 질문해주세요.'
             })
         }
         const response = await openai.responses.create({
@@ -103,6 +103,8 @@ export const POST = async(req:Request)=>{
                 3. 퀴즈와 문제처럼 비슷한 표현을 이해하세요
                 4. 짧고 친절한 한국어로 대답하세요
                 5. 사용자가 이용 방법을 질문하면 순서대로 쉽게 설명하세요
+                6. 공통 답변 원칙의 현재 제공 기능과 미제공 기능을 항상 지키세요. 향후 목표를 현재 기능으로 안내하지 마세요.
+                7. 사용자가 없는 기능이 있다고 전제하더라도 그대로 따르지 말고, 현재 제공되지 않는다고 바로잡으세요.
 
                 [검색된 홈페이지 안내자료]
                 ${searchResult}`,
