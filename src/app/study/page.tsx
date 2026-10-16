@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { studyData } from "@/data/studyData";
-import type { AiResponse, Studymode } from "@/types/study";
+import type { AiRequest, AiResponse, Studymode } from "@/types/study";
 import styles from "./page.module.scss";
 
 const StudyPage = () => {
@@ -10,32 +10,39 @@ const StudyPage = () => {
   const [message, setMessage] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
-  const [quizAnswer,setQuizAnswer]=useState('') //ai가 만들어낸 퀴즈
-  const [showAnswer, setShowAnswer] = useState(false) //ai가 만든 퀴즈의 답변이 있으면 보여주고 그렇지 않으면 감추는 역할
-  const [previousQuestions, setPreviousQuestion]= useState<string[]>([])
-  const [currentQuiz, setCurrentQuiz] = useState('')
+  const [quizAnswer, setQuizAnswer] = useState("");
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [currentQuiz, setCurrentQuiz] = useState("");
+  const [hint, setHint] = useState("");
+  const [error, setError] = useState("");
+  const [responseMode, setResponseMode] = useState<Studymode>("explain");
 
-  const funcquiz = async () => {
-    if (!message.trim()) {
-      setAnswer('질문을 입력해주세요')
+  const requestAnswer = async (requestedMode: Studymode) => {
+    if (loading) return;
+
+    setError("");
+    if (requestedMode === "hint" && !currentQuiz) {
+      setError("먼저 문제를 만들어주세요.");
       return;
     }
-    if(mode === 'hint'&& !currentQuiz){
-      setAnswer('먼저 퀴즈를 출제해주세요')
-      return
+    if (requestedMode !== "hint" && !message.trim()) {
+      setError("질문을 입력해주세요.");
+      return;
     }
 
     try {
       setLoading(true);
-      setAnswer("");
+
+      const payload: AiRequest = {
+        message: requestedMode === "hint" ? "현재 문제의 힌트를 알려주세요." : message,
+        mode: requestedMode,
+        ...(requestedMode === "hint" && { currentQuiz }),
+      };
 
       const res = await fetch("/api/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message,
-          mode,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -43,18 +50,27 @@ const StudyPage = () => {
       }
 
       const data: AiResponse = await res.json();
-      setAnswer(data.answer);
-
-      if(mode === 'quiz'){
-        setCurrentQuiz(data.answer || '')
-        // answer:string  question:string  questionans:string  hint:string
-        setQuizAnswer(data.question || '')
-        setShowAnswer(false)
-        setPreviousQuestion((prev)=>[...prev,data.answer].slice(-10))
+      if (!data.answer?.trim() || (requestedMode === "quiz" && !data.quizAnswer?.trim())) {
+        throw new Error("AI 응답이 올바르지 않습니다.");
       }
-    } catch(err) {
-      console.log(err)
-      setAnswer("AI 답변을 가져오지 못했습니다.");
+
+      if (requestedMode === "hint") {
+        setAnswer(currentQuiz);
+        setHint(data.answer);
+        setResponseMode("quiz");
+      } else {
+        setAnswer(data.answer);
+        setHint("");
+        setShowAnswer(false);
+        setResponseMode(requestedMode);
+
+        if (requestedMode === "quiz") {
+          setCurrentQuiz(data.answer);
+          setQuizAnswer(data.quizAnswer ?? "");
+        }
+      }
+    } catch {
+      setError("AI 답변을 가져오지 못했습니다. 다시 시도해주세요.");
     } finally {
       setLoading(false);
     }
@@ -76,7 +92,14 @@ const StudyPage = () => {
               <button
                 key={item.id}
                 className={mode === item.mode ? styles.activeMode : styles.modeButton}
-                onClick={() => setMode(item.mode)}
+                disabled={loading}
+                aria-pressed={mode === item.mode}
+                onClick={() => {
+                  setMode(item.mode);
+                  if (item.mode === "hint") {
+                    void requestAnswer("hint");
+                  }
+                }}
               >
                 <strong>{item.title}</strong>
                 <p>{item.description}</p>
@@ -95,31 +118,47 @@ const StudyPage = () => {
               />
             </div>
 
-            <button className={styles.submitButton} onClick={funcquiz} disabled={loading}>
-              {loading ? "답변 생성 중" : "질문하기"}
+            <button className={styles.submitButton} onClick={() => requestAnswer(mode)} disabled={loading}>
+              {loading ? "답변 생성 중" : mode === "hint" ? "힌트 받기" : "질문하기"}
             </button>
           </div>
         </div>
       </section>
+
+      {error && <p role="alert">{error}</p>}
 
       {answer && (
         <section className={styles.answer}>
           <h2>AI</h2>
           <p>{answer}</p>
           {
-            mode === 'quiz' && quizAnswer && (
+            responseMode === "quiz" && quizAnswer && (
               <>
-                <button onClick={()=>setShowAnswer(!showAnswer)}>
-                  {showAnswer?'정답 숨기기':'답변 보기'}
+                <button
+                  className={styles.submitButton}
+                  onClick={() => setShowAnswer((previous) => !previous)}
+                  aria-expanded={showAnswer}
+                  aria-controls="quiz-answer"
+                >
+                  {showAnswer ? "정답 숨기기" : "정답 보기"}
                 </button>
                 {
                   showAnswer && (
-                    <p>{quizAnswer}</p>
+                    <div id="quiz-answer" className={styles.quizDetail}>
+                      <h3>정답</h3>
+                      <p>{quizAnswer}</p>
+                    </div>
                   )
                 }
               </>
             )
           }
+          {responseMode === "quiz" && hint && (
+            <div className={styles.quizDetail} aria-live="polite">
+              <h3>힌트</h3>
+              <p>{hint}</p>
+            </div>
+          )}
         </section>
       )}
     </main>
